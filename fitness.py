@@ -136,12 +136,12 @@ def get_checkout_box():
     return 'checkout box'
 
 
-@app.post('/checkout')
+@app.post('/checkout')  # оформлюємо замоленя
 def add_training():
     return 'training was added'
 
 
-@app.put('/checkout')  # яка різниця пост і пут???????????????????????????
+@app.put('/checkout')  # редагуємо корзину
 def update_box():
     return 'checkout_box was updated'
 
@@ -166,17 +166,17 @@ def get_trainer_info(gim_id, trainer_id):
     return f'fitness center {gim_id}, {trainer_id} info'
 
 
-@app.get('/fitness_center/<gim_id>/trainer/<trainer_id>/score')  # отримати інф
+@app.get('/fitness_center/<gim_id>/trainer/<trainer_id>/score')  # відгук показати
 def get_trainer_score(gim_id, trainer_id):
     return f'fitness center {gim_id}, trainer {trainer_id} has score: '
 
 
-@app.post('/fitness_center/<gim_id>/trainer/<trainer_id>/score')  # віддати інф про
+@app.post('/fitness_center/<gim_id>/trainer/<trainer_id>/score')  # написати(створити) відгук про тренера
 def set_trainer_score(gim_id, trainer_id):
     return f'in fitness center {gim_id} trainer {trainer_id} received some score'
 
 
-@app.put('/fitness_center/<gim_id>/trainer/<trainer_id>/score')
+@app.put('/fitness_center/<gim_id>/trainer/<trainer_id>/score')  # редагувати відгук про тренера
 def update_trainer_score(gim_id, trainer_id):
     return f'fitness center {gim_id} trainer {trainer_id} score was update'
 
