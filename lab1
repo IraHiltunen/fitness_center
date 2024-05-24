@@ -1,0 +1,43 @@
+# /register[get, post]
+# /login
+# /user_info [get]
+# /user_info/<id>/balance_of_services
+# /user_info/<id>/balance_of_services/<add_services>
+# /user_info/<id>/balance_of_services/<book_service>
+# /user_info/<id>/balance_of_services/<book_off_services>
+# /user_info/<id>/<add_personal_info>
+# /fitness_center [get]
+# /fitness_center/<id> [get]
+# /fitness_center/<id>/loyalty_program[get]
+# /fitness_center/<id>/trainer [get]
+# /fitness_center/<id>/trainer/<trainer_id>[get]
+# /fitness_center/<id>/trainer/<trainer_id>/<schedule>
+# /fitness_center/<id>/trainer/<trainer_id>/<ranking>[get, post, put]
+# /fitness_center/<id>/trainer/<trainer_id>/<reviews>
+# /fitness_center/<id>/services[get]
+# /fitness_center/<id>/services/<service_id> [get]
+# /fitness_center/<id>/services/<service_id>/<schedule>
+# /fitness_center/<id>/services/<service_id>/<duration_of_training>
+# /fitness_center/<id>/services/<service_id>/<max_person>
+
+
+# /login [get, post]
+# /user [get, put, post]
+# /user/funds [get, post] гроші подивитися, додати
+# /user/reservations [get, post]
+# /user/reservations/<reservation_id> [get, put, delete]
+# /user/checkout [get, post, put]
+# /fitness_center [get]
+# /fitness_center/<id> [get]
+# /fitness_center/<id>/trainer [get]
+# /fitness_center/<id>/trainer/<trainer_id> [get]
+# /fitness_center/<id>/trainer/<trainer_id>/rating [get, post, put]
+# /fitness_center/<id>/services [get]
+# /fitness_center/<id>/services/<service_id> [get]
+# /register [get, post]
+# /fitness_center/<id>/loyalty_programs [get]
+
+# get - отримати(без параметрів) отримаємо дані цілком(повну інф)
+# post - створити щось нове(з параметрами)
+# put - відредагувати(з параметрами)
+# delete - (без параметрів) просто видаляємо
