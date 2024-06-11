@@ -25,6 +25,8 @@ from flask import Flask, request, render_template, session, redirect
 from functools import wraps
 import sqlite3
 
+from utils import clac_slots
+
 app = Flask(__name__)
 
 
@@ -100,11 +102,13 @@ class SQLiteDatabase:
 
 ############################
 
+
 def dict_factory(cursor, row): # for 4 hometask?
     d = {}
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
+
 
 def get_from_db(query, many=True): # for 4 hometask?
     con = sqlite3.connect('db.db')
@@ -120,6 +124,7 @@ def get_from_db(query, many=True): # for 4 hometask?
     con.close()
     return res
 
+
 def insert_to_db(query): # for 4 hometask?
     con = sqlite3.connect('db.db')
     cur = con.cursor()
@@ -131,19 +136,6 @@ def insert_to_db(query): # for 4 hometask?
 @app.get('/registration')  # відображає форму
 def user_register_invitation():
     return render_template('registration.html')
-
-#     return f"""<form action='/register' method='post'> # why post?!!!!
-#   <label for="login">login:</label><br>
-#   <input type="text" id="login" name="login"><br>
-#   <label for="password">password:</label><br>
-#   <input type="password" id="password" name="password">
-#   <label for="birth_date">birth_date:</label><br>
-#   <input type="date" id="birth_date" name="birth_date">
-#   <label for="phone">phone:</label><br>
-#   <input type="text" id="phone" name="phone">
-#
-#   <input type="submit" value="Submit"
-# </form>"""
 
 
 # def check_credentials(username, password): //це чиєсь... поки не знаю що)
@@ -161,19 +153,9 @@ def post_register():
     return 'user registered'
 
 
-
-@app.get('/login')
+@app.get('/login') # відображає форму
 def user_login_form():
-    return render_template('/user_login.html')# or /login_form???
-    # return f"""<form action='/login_form' method='post'>
-    #   <label for="login">login:</label><br>
-    #   <input type="text" id="login" name="login"><br>
-    #   <label for="password">password:</label><br>
-    #   <input type="password" id="password" name="password">
-    #   <input type="ok" value="Ok"
-    # </form>"""
-
-    # return 'enter credentials'
+    return render_template('/user_login.html')
 
 
 @app.post('/login')
@@ -185,8 +167,8 @@ def user_login():
 def user_info():
     with SQLiteDatabase('db.db') as db:
         res = db.fetch_all("user")
-        # res = get_from_db('select login, phone,birth_date  from user where id=1')
         return res
+
 
 @app.get('user/<user_id>')
 def get_user_info():
@@ -200,9 +182,9 @@ def add_user_info():
     return 'user data were modified'
 
 
-@app.put('/user')
-def user_update():
-    return 'user inf was successfully updated'
+# @app.put('/user') # dont have put and delete
+# def user_update():
+#     return 'user inf was successfully updated'
 
 
 @app.get('/funds') # @app.get('/funds/<user_id>') чи потрібен тут юзер???
@@ -256,14 +238,14 @@ def get_reservation_id(reservation_id):
         return render_template('get_service_info.html', get_service_info=res['get_service_info'])
 
 
-@app.put('/user/reservations/<reservation_id>/')#????????
-def update_reservation_id(reservation_id):
-    return f'this {reservation_id} was updated'
-
-
-@app.delete('/user/reservations/<reservation_id>/')#?????????
-def delete_reservation_id(reservation_id):
-    return f'this {reservation_id} was deleted'
+# @app.put('/user/reservations/<reservation_id>/')#????????
+# def update_reservation_id(reservation_id):
+#     return f'this {reservation_id} was updated'
+#
+#
+# @app.delete('/user/reservations/<reservation_id>/')#?????????
+# def delete_reservation_id(reservation_id):
+#     return f'this {reservation_id} was deleted'
 
 
 @app.get('/checkout')
@@ -281,16 +263,16 @@ def add_training():
     return 'training was added'
 
 
-@app.put('/checkout')  # редагуємо корзину
-def update_box():
-    return 'checkout_box was updated'
+# @app.put('/checkout')  # редагуємо корзину
+# def update_box():
+#     return 'checkout_box was updated'
 
 
 @app.get('/fitness_center')# чи є таке у нас??? можливо треба одразу з айді
 def fitness_center_info():
     with SQLiteDatabase  ('db.db') as db:
         res = db.fetch_all('select * from fitness_center ')
-        return render_template('/fitness_center_info.html')
+        return render_template('/fitness_center_info.html', fitness_center_info=res)
 
     # res = get_from_db('select name, address from fitness_center')
     # return str(res)
@@ -301,15 +283,13 @@ def get_gim_id_info(gim_id):
     with SQLiteDatabase('db.db') as db:
         res = db.fetch_one('select * from fitness_center where id=1', gim_id)
         return render_template('get_gim_id_info.html', get_gim_id_info=res['get_gim_id_info'])
-    # res = get_from_db(f'select name, address from fitness_center where id=1{gim_id}', False)
-    # return str(res)
 
 
 @app.get('/fitness_center/<gim_id>/coach/')
 def get_coaches(gim_id):
     with SQLiteDatabase('db.db') as db:
         res = db.fetch_all('select * from coach ', gim_id)
-        return render_template('/get_coaches.html')
+        return render_template('get_coaches.html', get_coaches=res)
 
 
 @app.get('/fitness_center/<gim_id>/coach/<coach_id>')
@@ -326,10 +306,11 @@ def pre_reservation():
     service = request.form['service']
     desired_date = request.form['desired_date']
     time_slots = clac_slots(coach, service, desired_date)
-    return render_template('pre_reservation.html', form_info = {'coach': coach,
-                                                                'service':service,
-                                                                'desered_date':desired_date,
-                                                                'time_slots':time_slots})
+    return render_template('pre_reservation.html', form_info={'coach': coach,
+                                                                'service': service,
+                                                                'desered_date': desired_date,
+                                                                'time_slots': time_slots})
+
 
 @app.get('/fitness_center/<gim_id>/coach/<coach_id>/score')  # відгук показати
 def get_coach_score(gim_id, coach_id):
@@ -340,18 +321,23 @@ def get_coach_score(gim_id, coach_id):
 
 @app.post('/fitness_center/<gim_id>/coach/<coach_id>/score')  # написати(створити) відгук про тренера
 def set_trainer_score(gim_id, coach_id):
-    return f'in fitness center {gim_id} trainer {coach_id} received some score'
+    form_data = request.form
+
+    with SQLiteDatabase('db.db') as db:
+        db.add_data("coach", {"name": form_data["name"], "age": form_data['age'],
+                        "sex": form_data["sex"], gim_id: 'gim_id', coach_id: "coach_id"})
+    return 'score updated'
 
 
-@app.put('/fitness_center/<gim_id>/coach/<coach_id>/score')  # редагувати відгук про тренера
-def update_trainer_score(gim_id, coach_id):
-    return f'fitness center {gim_id} trainer {coach_id} score was update'
+# @app.put('/fitness_center/<gim_id>/coach/<coach_id>/score')  # редагувати відгук про тренера
+# def update_trainer_score(gim_id, coach_id):
+#     return f'fitness center {gim_id} trainer {coach_id} score was update'
 
 
 @app.get('/fitness_center/<gim_id>/services/')
 def get_services(gim_id):
     with SQLiteDatabase('db.db') as db:
-        res = db.fetch_all("service", {"gim_id":gim_id})
+        res = db.fetch_all("service", {"gim_id": gim_id})
         return res
 
 
@@ -361,14 +347,10 @@ def get_service_info(gim_id, service_id):
         res = db.fetch_one('select * from service where service_id=1 and gim_id=1', gim_id, service_id)
         return render_template('get_service_info.html', get_service_info=res['get_service_info'])
 
-    # res = get_from_db(f'select name, description, price, max_attendees from service where id=1{gim_id}  and id=1{service_id}', False)
-    # return str(res)
-
 
 @app.get('/fitness_center/<gim_id>/loyalty_programs')  # отримати інф
 def get_loyalty_prog_info(gim_id): # тутпросто текст буде
     res = get_from_db(f'select loyalty_programs from ????? where id=1{gim_id}', False)
     return res
 
-    # return f'fitness center {gim_id} has such loyalty program'
 
