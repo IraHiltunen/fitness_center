@@ -160,8 +160,6 @@ def post_register():
                              "birth_date" : form_data["birth_date"], "phone": form_data['phone']})
     return 'user registered'
 
-    # insert_to_db(f'INSERT INTO user (login, password, birth_date, phone) VALUES (\'{form_data["login"]}\', \'{form_data["password"]}\', \'{form_data["birth_data"]}\', \'{form_data["phone"]}\')')
-    # return f'new user registered'
 
 
 @app.get('/login')
@@ -221,7 +219,7 @@ def add_funds():
     return 'user account wes modified'
 
 
-@app.get('/reservations') # '/user/reservations'
+@app.get('/reservations_list') # '/user/reservations'
 @login_required
 def get_reservation_list():
     # res = get_from_db('select * from reservation where id=1{user_id}')
@@ -232,12 +230,12 @@ def get_reservation_list():
         services = db.select_method("service", columns=['id', 'name'], fetch_all=True)
         reservations = db.select_method("reservation", join={'user': 'reservation.user_id = user_id',
                                                              'service': 'reservation.service_id = service_id',
-                                                             'fitness_center' : 'service.fitness_center_id = fitness_center.id'},
-                                        columns=['reservation.id as reservation_id', 'reservation_date',
+                                                             'fitness_center': 'service.fitness_center_id = fitness_center.id'},
+                                        columns=['reservation.id as reservation_id', 'reservation.date',
                                                  'reservation.time', 'user.login as user_name',
                                                  'service.name as service_name', 'fitness_center as fitness_center'],
-                                        condition={'user_id':user['id']}, fetch_all=True)
-    return render_template('reservations.html', reservations=reservations, services=services)
+                                        condition={'user_id': user['id']}, fetch_all=True)
+    return render_template('reservations_list.html', reservations=reservations, services=services)
 
     from_dict = request.form
     service_id = form_dict['service_id']
