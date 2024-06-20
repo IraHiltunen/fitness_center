@@ -1,7 +1,7 @@
 import datetime
 
 from fitness import SQLiteDatabase
-from utils
+# from utils import
 
 
 def clac_slots(coach_id, service_id, desired_date):
@@ -11,8 +11,8 @@ def clac_slots(coach_id, service_id, desired_date):
 
     with SQLiteDatabase('db.db') as db:
         booked_time = db.select_method("reservation", {"coach_id": coach_id}, join={'service': 'service_id = reservation.service_id'}, fetchall=True)
-        coach_schedule = db.select_method("coach_schedule", {"coach_id": coach_id}, "date": "31.05.2024"}, fetchall=False)
-        coach_capacity = db.select_method("coach_service", {"coach_id": coach_id}, "service_id": service_id}, fetchall=False)
+        coach_schedule = db.select_method("coach_schedule", {"coach_id": coach_id}, {"date": "31.05.2024"}, fetchall=False)
+        coach_capacity = db.select_method("coach_service", {"coach_id": coach_id}, {"service_id": service_id}, fetchall=False)
         service_info = db.select_method('service', {'service_id': id})
 
         start_dtime = datetime.datetime.strptime(coach_schedule["date"]+' '+coach_schedule["start_time"], '%d.%m.%Y %H:%M')

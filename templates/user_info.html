@@ -12,5 +12,11 @@ phone: {{ user_info.phone }}
 birth_date: {{ user_info.birth_date }}
 <p>
 funds: {{ user_info.funds }}
+
+<form action="/user/{{ user.id }}" method="post">
+    <input name="phone" id="phone" type="text">
+    <input type="submit">
+
+</form>
 </body>
 </html>
