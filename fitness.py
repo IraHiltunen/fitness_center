@@ -1,4 +1,3 @@
-import os
 
 # @app.route("/")
 # def hel():
@@ -16,144 +15,29 @@ import os
 
 # SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate що вибираємо з таблиць
 # FROM Orders  з якої таблиці вибираємо
-# INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID; join яку ще таблицю ON умова, за якою їх обʼєднуємо
+# INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID;
+#              join яку ще таблицю ON умова, за якою їх обʼєднуємо
+
+# Select * from reservation
+#     join service on service.id = reservation.service_id обʼєднати з табл сервіс за умови:
+#                     в табл сервіс id = в табл резервейшн cervice_id
+#     join coach_schedule on reservation.date = coach_schedule.date and reservation.coach_id=coach_schedule.coach
+#     where reservation.coach_id = 1
 
 from flask import Flask, request, render_template, session, redirect
 from flask_session import Session
 from functools import wraps
-import sqlite3
+#import sqlite3
+# import utils
+import os
 from send_mail import add
 
-# from utils import clac_slots
+from utils import SQLiteDatabase
+from utils import clac_slots
 
 app = Flask(__name__, template_folder='templates')
 # app.secret_key = "123456789"
 app.secret_key = os.environ.get("SESSION_SECRET_KEY")
-
-# if __name__ == '__main__': # why this is here?
-#     fitness.run(debug=True)
-# app.secret_key = os.environ.get("SESSION_SECRET_KEY")
-
-
-class SQLiteDatabase:
-    def __init__(self, db_path):
-        self.db_path = db_path
-        self.connection = None
-
-    def __enter__(self):
-        self.connection = sqlite3.connect(self.db_path)
-        self.connection.row_factory = dict_factory # dict_factory(cursor, row)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.connection:
-            self.connection.close()
-
-    def fetch_all(self, table, condition=None, join_table=None, join_condition=None):
-        # join_condition = {"fitness_center.id": "service.name"} вказати таблицю і поле!!!
-        # join_condition = {"{join table}" :{"fitness_center.id": "service.name"}}
-        query = f"SELECT * FROM {table}"
-        conditions = []
-
-        if join_table is not None:
-            join_cond_list = []
-            for key, val in join_condition.items():
-                conditions.append(f"{key}='{val}' ")
-            join_cond_str = ' and '.join(join_cond_list)
-            join_str = f' join {join_table} on {join_cond_str} '
-            query = query + join_str
-
-        if condition is not None:
-            for key, val in condition.items():
-                conditions.append(f"{key}='{val}' ")
-            str_conditions = "and ".join(conditions)
-            str_conditions = " where " + str_conditions
-            query = query + str_conditions
-
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        res = cursor.fetchall()
-        if res:
-            return res
-        return None
-
-    def fetch_one(self, table, condition=None, join_table=None, join_condition=None):
-        # join_condition = {"fitness_center.id": "service.name"} specify table and field!!!
-        # join_condition = {"{join table}" :{"fitness_center.id": "service.name"}}
-        query = f"SELECT * FROM {table}"
-        conditions = []
-
-        if join_table is not None:
-            join_cond_list = []
-            for key, val in join_condition.items():
-                join_cond_list.append(f"{key}='{val}'")
-            join_cond_str = ' and '.join(join_cond_list)
-            join_str = f' JOIN {join_table} ON {join_cond_str}'
-            query = query + join_str
-
-        if condition is not None:
-            for key, val in condition.items():
-                conditions.append(f"{key}='{val}'")
-            str_conditions = " AND ".join(conditions)
-            str_conditions = " WHERE " + str_conditions
-            query = query + str_conditions
-
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        res = cursor.fetchone()
-        if res:
-            return res
-        return None
-
-    def add_data(self, table, data): # renamed commit
-        keys = []
-        vals = []
-        for key, value in data.items():
-            keys.append(key)
-            vals.append("'" + str(value) + "'")
-
-        str_keys = ', '.join(keys)
-        str_vals = ', '.join(vals)
-        query = f"""INSERT INTO {table} ({str_keys}) VALUES ({str_vals})"""
-        cursor = self.connection.cursor
-        cursor.execute(query)
-        self.connection.commit()
-
-
-    def delete_data(self, table, condition): # todo this func подозреваю,что не правильно тут сделала
-        conditions = []
-
-        query = f"DELETE FROM {table}"
-
-        if condition is not None:
-            for key, val in condition.items():
-                conditions.append(f"{key} = {val}")
-            str_conditions = ' AND '.join(conditions)
-            query = query + " WHERE " + str_conditions
-
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        self.connection.commit()
-
-
-    def edit_data(self, table, data, condition):  # todo this func подозреваю,что не правильно тут сделала
-        updated_values = []
-        conditions = []
-        for key, value in data.items():
-            updated_values.append(f"{key} = {value}")
-        set_clause = ', '.join(updated_values) # set_clause- what is it?!!!!!!!!!
-        query = f"Update {table} Set {set_clause}"
-
-        if condition is not None:
-            for key, val in condition.items():
-                conditions.append(f"{key} + {val}")
-            str_conditions = ' And '.join(conditions)
-            str_conditions = ' Where ' + str_conditions
-            query = query + str_conditions
-
-        cursor = self.connection.cursor
-        cursor.execute(query)
-        self.connection.commit()
 
 
 def login_required(func):
@@ -166,37 +50,6 @@ def login_required(func):
     return wr1()
 
 ############################
-
-
-def dict_factory(cursor, row): # for 4 hometask?
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
-
-def get_from_db(query, many=True): # for 4 hometask?
-    con = sqlite3.connect('db.db')
-
-    con.row_factory = dict_factory
-
-    cur = con.cursor()
-    cur.execute(query)
-    if many:
-        res = cur.fetchall()
-    else:
-        res = cur.fetchone()
-    con.close()
-    return res
-
-
-def insert_to_db(query): # for 4 hometask?
-    con = sqlite3.connect('db.db')
-    cur = con.cursor()
-    cur.execute(query)
-    con.commit() # зафіксувати зміни
-    con.close()
-
 
 
 @app.get('/')# todo template for this
@@ -272,7 +125,7 @@ def add_user_info(user_id):
     return render_template('user_info.html', user=res)
 
 
-@app.get('/funds') # check this # @app.get('/funds/<user_id>')
+@app.get('/funds')
 @login_required
 def user_deposit_info(user_id):
     with SQLiteDatabase('db.db') as db:
@@ -299,7 +152,7 @@ def get_reservation_list():
                             columns=['reservation.id as reservation_id', 'reservation.date',
                                     'reservation.time', 'user.login as user_name',
                                     'service.name as service_name', 'fitness_center as fitness_center'],
-                            condition={'user_id': user_id['id']})
+                            condition={'user_id': user_id})
         return render_template('get_reservation_list.html',
                        reservations=reservations) #, services=services)
 
@@ -330,7 +183,7 @@ def add_reservation():
 def rebuild_reservation(reservation_id):
 
 
-@app.post('/user/reservations/<reservation_id>')# видалити резервацію
+@app.post('/user/reservations/<reservation_id>/delete')# видалити резервацію
 @login_required
 def delete_reservation(reservation_id):
 
@@ -489,9 +342,9 @@ def get_service_info(gim_id, service_id):
     with SQLiteDatabase('db.db') as db:
         res = db.fetch_one('service', {'gim_id': gim_id, 'service_id': service_id},
                            join={'gim': 'service.gim_id = gim.id'},
-                           columns=['service.id as service_id', 'service.name', 'service.time',
-                                   'service.description','service.max_attendees',
-                                    'service.duration', 'gim.name as gim_name'])
+                           columns=['service.id as service_id', 'service.name', 'service.duration'
+                                    'service.description','service.max_attendees',
+                                    'gim.name as gim_name'])
     return render_template('get_service_info.html', get_service_info=res)
         # if res is not None:
         #     return  render_template('get_service_info.html', get_service_info=res)
@@ -500,7 +353,7 @@ def get_service_info(gim_id, service_id):
 
 
 @app.get('/fitness_center/<gim_id>/loyalty_programs')  # отримати інф
-def get_loyalty_prog_info(gim_id): # тутпросто текст буде
+def get_loyalty_prog_info(gim_id): # тут просто текст буде
     res = get_from_db(f'select loyalty_programs from ????? where id=1{gim_id}', )
     return res
 

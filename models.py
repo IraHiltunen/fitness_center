@@ -8,6 +8,8 @@ class FitnessCenter(Base):
     address = Column(String(50), unique=True, nullable=False)
     name = Column(String(50), unique=True, nullable=False)
     contacts = Column(String(50), unique=False, nullable=False)
+
+
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)

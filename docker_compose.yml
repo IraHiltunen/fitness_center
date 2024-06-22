@@ -1,0 +1,23 @@
+services:
+  web:
+    build: .
+    ports:
+      -8080:8080
+    command: python2 fitness_center.py
+    celery_worker:
+      build:
+      command: celery -A celery worker worker -- loglevel=INFO
+      environment:
+        
+
+  db:
+    image: "postgres"
+    environment:
+      POSTGRES_PASSWORD: example
+    ports:
+      - 5432:5432
+  rabbit_mq:
+    image: "rabbitmq:3-management"
+    ports:
+      - 15672:15672
+      - 5672:5672
