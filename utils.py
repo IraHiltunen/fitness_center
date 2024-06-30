@@ -1,9 +1,6 @@
 import datetime
 import sqlite3
 
-from fitness import SQLiteDatabase
-# from utils import
-
 
 def dict_factory(cursor, row): # for 4 hometask?
     d = {}
@@ -100,7 +97,7 @@ class SQLiteDatabase:
     def delete_data(self, table, condition): # todo this func подозреваю,что не правильно тут сделала
         conditions = []
 
-        query = f"DELETE FROM {table}"
+        query = f"DELETE * FROM {table}"
 
         if condition is not None:
             for key, val in condition.items():
@@ -133,21 +130,21 @@ class SQLiteDatabase:
         self.connection.commit()
 
 
-def clac_slots(coach_id, service_id, desired_date): # (user_id, coach_id, service_id)
+def clac_slots(coach_id, service_id, desired_date):
     query = (f'select * from reservation'# це як приклад, по чому ми це робимо
              f'join service on service.id = reservation.service_id'
              f'where coach_id = {coach_id}')
 
     with SQLiteDatabase('db.db') as db:
-        booked_time = db.fetch_one("reservation", {"coach_id": coach_id, "date": "31.05.2024"},
-                                   {'service': 'service_id = reservation.service_id'})
-                                   # join={'service': 'service_id = reservation.service_id'})
-                                    # чому тут джоін
+        booked_time = db.fetch_all("reservation", {"coach_id": coach_id, "date": "31.05.2024"},
+                                   join_table='service',
+                                   join_condition={'service_id': 'reservation.service_id'})
+
         coach_schedule = db.fetch_one("coach_schedule", {"coach_id": coach_id},
                                       {"date": "31.05.2024"})
         coach_capacity = db.fetch_one("coach_services", {"coach_id": coach_id,
-                                      "service_id": service_id})
-        service_info = db.fetch_one('service', {'service_id': id})
+                                      "service_id": service_id}) # нема капасіті бо це важко!!!!!!!!
+        service_info = db.fetch_one('service', {'id': service_id})
 
         start_dtime = datetime.datetime.strptime(coach_schedule["date"] +
                                 ' ' + coach_schedule["start_time"], '%d.%m.%Y %H:%M')
@@ -157,6 +154,9 @@ def clac_slots(coach_id, service_id, desired_date): # (user_id, coach_id, servic
         coach_schedule = {}
 
         while current_dtime < end_dtime:
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # словник coach_schedule з ключом "current_dtime" тут в нього записується значення
+            # словника coach_capacity з ключем 'capacity'
             coach_schedule[current_dtime] = coach_capacity['capacity'] # max capacity for coach
             current_dtime = current_dtime + datetime.timedelta(minutes=15)
 
@@ -179,7 +179,6 @@ def clac_slots(coach_id, service_id, desired_date): # (user_id, coach_id, servic
             everything_is_free = True
             iter_start_time = service_start_time
             while iter_start_time < service_end_time:
-
                 if coach_schedule[iter_start_time] == 0 or service_end_time > end_dtime:
                     everything_is_free = False
                     break
@@ -190,7 +189,7 @@ def clac_slots(coach_id, service_id, desired_date): # (user_id, coach_id, servic
 
             service_start_time += datetime.timedelta(minutes=15)
         final_result = [datetime.datetime.strptime(el, '%H:%M')for el in result_times]
-        return result_times
+        return final_result
 
 
 

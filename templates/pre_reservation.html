@@ -5,15 +5,15 @@
     <title>Title</title>
 </head>
 <body>
-<form method="post" action="/user/reservations/">
-    <input hidden="coach" value="{{form_info['coach'] }}">
-    <input hidden="service" value="{{form_info['service'] }}">
-    <input hidden="date" value="{{form_info['desired_date'] }}">
+<form method="post" action="/user/reservations">
+    <input hidden="coach" value="{{ form_info['coach'] }}">
+    <input hidden="service" value="{{ form_info['service'] }}">
+    <input hidden="date" value="{{ form_info['desired_date'] }}">
     <label for="slots">Choose time:</label>
       <select name="slots" id="slots">
-          {% for time in form_info['time_slots'] %}
-            <option value="{{ t }}">{{ t}}</option>
-          {% endfor %}
+        {% for time in form_info['time_slots'] %}
+          <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
       </select>
 
     <input type="submit">

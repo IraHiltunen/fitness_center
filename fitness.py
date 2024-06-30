@@ -24,16 +24,17 @@
 #     join coach_schedule on reservation.date = coach_schedule.date and reservation.coach_id=coach_schedule.coach
 #     where reservation.coach_id = 1
 
-from flask import Flask, request, render_template, session, redirect
-from flask_session import Session
-from functools import wraps
-#import sqlite3
-# import utils
 import os
-from send_mail import add
 
-from utils import SQLiteDatabase
-from utils import clac_slots
+from flask import Flask, request, render_template, session, redirect
+from functools import wraps
+from utils import SQLiteDatabase, clac_slots
+
+#from send_mail import add
+
+#import sqlite3
+#from flask_session import Session
+
 
 app = Flask(__name__, template_folder='templates')
 # app.secret_key = "123456789"
@@ -54,8 +55,8 @@ def login_required(func):
 
 @app.get('/')# todo template for this
 def index():
-    add.delay(1, 2)
-    return render_template('index.html')
+    #add.delay(1, 2)
+    return redirect('index.html')
 
 
 @app.get('/registration')  # відображає форму
@@ -67,6 +68,7 @@ def check_credentials(username, password): #... перевіряє залогі�
     with SQLiteDatabase('db.db') as db:
         user = db.fetch_one("user", {"login": username, "password": password})
     return user is not None
+
 
 @app.post('/registration') # запис в базу даних
 def post_register():
@@ -80,7 +82,7 @@ def post_register():
         # phone = form_data.get('phone')
         db.add_data("user", {"login": form_data["login"], "password": form_data['password'],
                              "birth_date": form_data["birth_date"], "phone": form_data['phone']})
-    return 'user registered'
+    return render_template('/')
 
 
 @app.get('/login') # відображає форму
@@ -95,7 +97,7 @@ def user_login_form():
 def user_login():
     login = request.form['login']
     password = request.form['password']
-    if check_credentials(login, password):# чи це треба?
+    if check_credentials(login, password):
         with SQLiteDatabase('db.db') as db:
             user = db.fetch_one("user", {"login": login})
         session['user_id'] = user['id']
@@ -131,7 +133,7 @@ def user_deposit_info(user_id):
     with SQLiteDatabase('db.db') as db:
         # res = db.fetch_one('select funds from user where id=1', user_id)
 
-        res = db.fetch_one("user", {"id": user_id}, columns=['funds.id as funds_id'])
+        res = db.fetch_one("user", {"id": user_id}, join_table=['funds.id as funds_id'])
         return render_template('funds.html', funds=res['funds'])
 
 
@@ -140,40 +142,39 @@ def add_funds():
     return 'user account wes modified'
 
 
-@app.get('/user/reservations') # список резервацій юзера
+@app.get('/user/reservations')# список резервацій юзера !!!тут приклад як виправити все,де є db.fetch_one
 @login_required
 def get_reservation_list():
     user_id = session.get('user_id', None)
     with SQLiteDatabase('db.db') as db:
-        #services = db.fetch_one("service", columns=['id', 'name'])
-        reservations = db.fetch_one("reservation", join={'user': 'reservation.user_id = user.id',
+        services = db.fetch_all("service", join_table=['id', 'name'])
+        reservations = db.fetch_all("reservation", condition={'user': 'reservation.user_id = user.id',
                             'service': 'reservation.service_id = service.id',
                             'fitness_center': 'service.fitness_center_id = fitness_center.id'},
-                            columns=['reservation.id as reservation_id', 'reservation.date',
+                            join_table=['reservation.id as reservation_id', 'reservation.date',
                                     'reservation.time', 'user.login as user_name',
                                     'service.name as service_name', 'fitness_center as fitness_center'],
-                            condition={'user_id': user_id})
+                            join_condition={'user_id': user_id})
         return render_template('get_reservation_list.html',
-                       reservations=reservations) #, services=services)
-
-    from_dict = request.form
-    service_id = form_dict['service_id']
-    coach_id = form_dict['coach_id']
-    slot_id = form_dict['slot_id']
-
+                       reservations=reservations, services=services)
 
 
 @app.post('/user/reservations')# додати резервацію
 @login_required
 def add_reservation():
     user_id = session.get('user_id', None)
+    from_dict = request.form
+    service_id = from_dict['service_id']
+    coach_id = from_dict['coach_id']
+    slot_id = from_dict['slot_id']
+    result = clac_slots()
     with SQLiteDatabase('db.db') as db:
         db.add_data("reservation", {'user_id': user_id['id'],
                                     'service_id': request.form.get('service_id'),
                                     'date': request.form.get('date'),
                                     'time': request.form.get('time')})
 
-    send_mail('ira.jhdhj@gmail.com', 'test_subject', )
+    #send_mail('ira.jhdhj@gmail.com', 'test_subject', )
 
     return redirect('/user/reservations')
 
@@ -181,6 +182,7 @@ def add_reservation():
 @app.post('/user/reservations/<reservation_id>')# редагувати резервацію
 @login_required
 def rebuild_reservation(reservation_id):
+    pass
 
 
 @app.post('/user/reservations/<reservation_id>/delete')# видалити резервацію
@@ -195,9 +197,9 @@ def delete_reservation(reservation_id):
 def get_reservation_id(reservation_id):
     with SQLiteDatabase('db.db') as db:
         reservation = db.fetch_one('reservation', {'reservation_id': reservation_id},
-                                   join={'user': 'reservation.user_id = user.id',
-                                        'service': 'reservation.service_id = service.id'},
-                columns=['reservation.id as reservation_id', 'reservation.date',
+                                   join_table={'user': 'reservation.user_id = user.id',
+                                               'service': 'reservation.service_id = service.id'},
+                join_condition=['reservation.id as reservation_id', 'reservation.date',
                 'reservation.time', 'user.login as user_name', 'service.name as service_name'])
         if reservation:
             return render_template('get_service_info.html',
@@ -207,18 +209,20 @@ def get_reservation_id(reservation_id):
 
 
 
-@app.post('/pre_reservation')
+@app.post('/pre_reservation') # зі сторінки тренера?
 @login_required
 def pre_reservation():
-    user = session.get('user', None)
+    # user = session.get('user', None)
     coach = request.form['coach']
     service = request.form['service']
     desired_date = request.form['desired_date']
+
     time_slots = clac_slots(coach, service, desired_date)
-    return render_template('pre_reservation.html', form_info={'coach': coach,
-                                                                'service': service,
-                                                                'desered_date': desired_date,
-                                                                'time_slots': time_slots})
+    return render_template('pre_reservation.html',
+                           form_info={'coach': coach,
+                                      'service': service,
+                                      'desired_date': desired_date,
+                                      'time_slots': time_slots})
 
 
 @app.get('/checkout')
@@ -244,9 +248,6 @@ def fitness_center_info():
         res = db.fetch_all('select * from fitness_center ')
         return render_template('fitness_center_info.html', fitness_center_info=res)
 
-    # res = get_from_db('select name, address from fitness_center')
-    # return str(res)
-
 
 @app.get('/fitness_center/<gim_id>')
 def get_gim_id_info(gim_id):
@@ -271,14 +272,15 @@ def get_coach(gim_id):
                                     'gim.name as gim_name'})
         return render_template('get_coach.html', get_coach=res)
 
-@app.get('/fitness_center/<gim_id>/coach/<coach_id>')
-def get_coach_info(gim_id, coach_id):
+
+@app.get('/fitness_center/<fitness_center_id>/coach/<coach_id>')
+def get_coach_info(fitness_center_id, coach_id):
     with SQLiteDatabase('db.db') as db:
-        res = db.fetch_one("coach",{'gim_id': gim_id, 'coach_id': coach_id},
-                           join={'gim': 'coach_id = gim_id'},
+        res = db.fetch_one("coach", {'fitness_center_id': fitness_center_id, 'coach_id': coach_id},
+                           join={'fitness_center': 'coach.fitness_center_id = fitness_center'},# dont need
                            columns=['coach.id as coach_id', 'coach.name as coach_name',
-                                    'gim.name as gim_name'])
-        return render_template('get_coach_info.html', get_coach_info=res)
+                                    'fitness_center.name as fitness_center.name'])
+    return render_template('get_coach_info.html', get_coach_info=res)
 
     # if res is not None:
     #     return  render_template('get_coach_info.html', get_coach_info=res)
@@ -294,15 +296,12 @@ def get_coach_score(gim_id, coach_id):
         # серед всіх відгуків знайти відгук кор-ча і ним заповнити форму
         score = db.fetch_one("score", # тут всі відгуки!!!!!!!!!!!
                             join={'coach': 'score.coach_id = coach.id',
-                                  'gim': 'score.gim_id = gim.id',
+                                  'fitness_center': 'score.gim_id = gim.id',
                                   'user': 'score.user_id = user.id'},
                              columns=['score.text', 'score.points', 'user.login',
                                       'gim.name as gim_name', 'coach.name as coach_name'],
                              condition={"score.user_id": session.get("user_id")})
     return render_template('get_coach_score.html', score=score)
-
-        # res = db.fetch_one('select * from review where id=1 and coach_id=1', gim_id, coach_id)
-        # return render_template('get_coach_score.html', get_coach_score=res['get_coach_score'])
 
 
 @app.post('/fitness_center/<gim_id>/coaches/<coach_id>/score') # написати(створити) відгук про тренера
@@ -352,10 +351,10 @@ def get_service_info(gim_id, service_id):
         #     return "service is not found "
 
 
-@app.get('/fitness_center/<gim_id>/loyalty_programs')  # отримати інф
-def get_loyalty_prog_info(gim_id): # тут просто текст буде
-    res = get_from_db(f'select loyalty_programs from ????? where id=1{gim_id}', )
-    return res
+# @app.get('/fitness_center/<gim_id>/loyalty_programs')  # отримати інф
+# def get_loyalty_prog_info(gim_id): # тут просто текст буде
+#     res = get_from_db(f'select loyalty_programs from ????? where id=1{gim_id}', )
+#     return res
 
 
 if __name__ == '__main__':
