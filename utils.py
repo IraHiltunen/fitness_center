@@ -93,7 +93,6 @@ class SQLiteDatabase:
         cursor.execute(query)
         self.connection.commit()
 
-
     def delete_data(self, table, condition): # todo this func подозреваю,что не правильно тут сделала
         conditions = []
 
@@ -108,7 +107,6 @@ class SQLiteDatabase:
         cursor = self.connection.cursor()
         cursor.execute(query)
         self.connection.commit()
-
 
     def edit_data(self, table, data, condition):
         updated_values = []
@@ -195,5 +193,5 @@ def clac_slots(coach_id, service_id, desired_date):
 
     print('')
 
-clac_slots(1,1,2)
+#clac_slots(1,1,2)
 

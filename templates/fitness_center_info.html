@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>fitness_center</title>
 </head>
 <body>
 <form action='/fitness_center' method='post'>
@@ -13,7 +13,36 @@
   <label for="contacts">contacts:</label><br>
   <input type="text" id="contacts" name="contacts">
 
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">My Fitness Center</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">main_page</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/reservations">reservations</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/user">owner_page</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/fitness_center">fitness_center</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary btn-logout" href="/logout">Вийти</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
   <input type="submit" value="Submit">
 </form>
 </body>
 </html>
+

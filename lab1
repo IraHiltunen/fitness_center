@@ -37,7 +37,22 @@
 # /register [get, post]
 # /fitness_center/<id>/loyalty_programs [get]
 
+
 # get - отримати(без параметрів) отримаємо дані цілком(повну інф)
-# post - створити щось нове(з параметрами)
-# put - відредагувати(з параметрами)
+# post - створити щось нове(з параметрами)!!!  як правило в REST
+# put - відредагувати(з параметрами) !!!  як правило в REST
 # delete - (без параметрів) просто видаляємо
+# Flask port 5000
+
+
+
+# SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate що вибираємо з таблиць
+# FROM Orders  з якої таблиці вибираємо
+# INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID;
+#              join яку ще таблицю ON умова, за якою їх обʼєднуємо
+
+# Select * from reservation
+#     join service on service.id = reservation.service_id обʼєднати з табл сервіс за умови:
+#                     в табл сервіс id = в табл резервейшн cervice_id
+#     join coach_schedule on reservation.date = coach_schedule.date and reservation.coach_id=coach_schedule.coach
+#     where reservation.coach_id = 1
