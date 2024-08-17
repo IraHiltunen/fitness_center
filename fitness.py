@@ -158,47 +158,32 @@ def add_user_info(user_id):  # де використати user_id,можлив�
     # return render_template('user_info.html', user=res)
 
 
-@app.get('/funds')
-@login_required
-def user_deposit_info(user_id):# де використати user_id,
-    database.init_db()
-    data = database.db_session.query(models.User.id, models.User.login,
-                                     models.User.funds).filter_by(
-        id=session.get('user_id')).first()
-    return render_template('funds.html', funds=data['fund'])
-
-    # with SQLiteDatabase('db.db') as db:
-    #     res = db.fetch_one("user", {"id": user_id})
-    #     return render_template('funds.html', funds=res['funds'])
-
-
-@app.post('/funds')# todo this
-#@login_required # чи треба тут це?!!!!!!!!!!!!!!!!!!
-def add_funds():
-    form_data = request.form
-    database.init_db()
-    new_data_user = models.User.add_funds() # ??????????
-    new_data_user2 = models.User.withdraw()
-    database.db_session.add(new_data_user)
-    database.db_session.add(new_data_user2)
-    database.db_session.commit()
-    return 'user account was modified'
+# @app.get('/funds')# вирішили не треба
+# @login_required
+# def user_deposit_info():
+#     database.init_db()
+#     data = database.db_session.query(models.User.id, models.User.login,
+#                                      models.User.funds).filter_by(
+#         id=session.get('user_id')).first()
+#     return render_template('funds.html', funds=data['funds'])
+#
+#
+# @app.post('/funds')# вирішили не треба
+# @login_required
+# def add_funds():
+#     #form_data = request.form якщо є та форма в html
+#     database.init_db()
+#     new_data_user = models.User.add_funds(5)
+#     database.db_session.add(new_data_user)
+#     database.db_session.commit()
+#     return 'user account was modified'
 
 
 @app.get('/user/reservations')# список резервацій юзера
 @login_required
 def get_reservation_list():
-    # user = session.get('user', None)
-    # with SQLiteDatabase('db.db') as db:
-    #     services = db.fetch_all("service", join_table=['id', 'name'])# можливо не треба сервіси
-    #     reservations = db.fetch_all("reservation", condition={'user_id': user,
-    #             'service_id': service.id},#можливо 'service_id': service.id взагалі не треба???
-    #                                 join_table={'service'},
-    #                                 join_condition={reservation.service_id = service.id})
-    #     return render_template('get_reservation_list.html',
-    #                    reservations=reservations, services=services)
-
-    form_data = request.form
+    user = session.get('user', None)
+    form_data = request.form # тільки якщо в темплейті є та форма!!
     database.init_db()
     reservations = database.db_session.query(models.User(login=form_data["login"]),
                     models.Service(name=form_data["name"]),
@@ -484,6 +469,6 @@ def get_service_info(fitness_center_id, service_id):
 
 
 if __name__ == '__main__':
-    host = '127.0.0.1' # '0.0.0.0' в чому різниця
+    host = '0.0.0.0'
     port = 8080
     app.run(host=host, port=port, debug=True)
