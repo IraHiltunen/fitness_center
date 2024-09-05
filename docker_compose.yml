@@ -2,22 +2,42 @@ services:
   web:
     build: .
     ports:
-      -8080:8080
-    command: python2 fitness_center.py
-    celery_worker:
-      build:
-      command: celery -A celery worker worker -- loglevel=INFO
-      environment:
-        
+      - "127.0.0.1:8080:8080"
+    command: python3 fitness.py #??????
+    environment:
+      DB_HOST: db_postgres
+      RABBITMQ_HOST: rabbitmq
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
+
+  celery_worker:
+    build: .
+    command: celery -A celery_worker worker --loglevel=INFO #--purge --pool=solo
+    environment:
+      smtp_sender: "<user_smtp_email>"
+      smtp_password: "<user_smtp_password>"
+      DB_HOST: db_postgres
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
 
   db:
     image: "postgres"
+    restart: "always"
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: example
     ports:
       - 5432:5432
+
   rabbit_mq:
     image: "rabbitmq:3-management"
     ports:
       - 15672:15672
       - 5672:5672
+#    hostname: rabbitmq
+#    environment:
+#      RABBITMQ_DEFAULT_USER: rabbit
+#      RABBITMQ_DEFAULT_PASS: rabbit

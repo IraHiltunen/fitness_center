@@ -12,7 +12,7 @@ from utils import SQLiteDatabase, clac_slots
 import models
 import database
 
-#from send_mail import add
+from send_mail import add, send_mail
 
 #import sqlite3
 from flask_session import Session
@@ -48,6 +48,9 @@ def login_required(func):
 
 @app.get('/')
 def index():
+    # from send_mail import add
+    # add.delay(1, 2)
+    send_mail.delay("irajhdhj@gmail.com", "ira", "some text")
     #return render_template('index.html')
     return redirect('/fitness_center_info')
 
@@ -203,15 +206,14 @@ def add_reservation():
     result = clac_slots(1,1,1)
     database.init_db()
     new_reservation = models.Reservation(user_id=session.get("user_id"),
-                                          coach_id=form_dict["coach_id"],
-                                          service_id=form_dict["service_id"],
-                                          date=["date"], time=["time"])
+                                         coach_id=form_dict["coach_id"],
+                                         service_id=form_dict["service_id"],
+                                         date=["date"], time=["time"])
     database.db_session.add(new_reservation)
     database.db_session.commit()
+
+    send_mail("irajhdhj@gmail.com", "test_subject", "some text")
     return redirect('/user/reservations')
-
-    # #send_mail('ira.jhdhj@gmail.com', 'test_subject', )
-
 
 
 @app.post('/user/reservations/<reservation_id>')# редагувати резервацію
@@ -292,21 +294,21 @@ def pre_reservation():
                                       'time_slots': time_slots})
 
 
-@app.get('/checkout')# можливо не треба це робити, бо не хочу
-@login_required
-def get_checkout_box():# звідки взяти інф?
-    return f"""<form action='/checkout' method='post'>
-      <label for="checkout_box">checkout_box:</label><br>
-      <input type="text" id="checkout_box" name="checkout_box"><br>
-     
-      <input type="submit" value="Submit"
-    </form>"""
-
-
-@app.post('/checkout')  # оформлюємо замовленя
-@login_required
-def add_training():
-    return 'training was added'
+# @app.get('/checkout')# можливо не треба це робити, бо не хочу
+# @login_required
+# def get_checkout_box():# звідки взяти інф?
+#     return f"""<form action='/checkout' method='post'>
+#       <label for="checkout_box">checkout_box:</label><br>
+#       <input type="text" id="checkout_box" name="checkout_box"><br>
+#
+#       <input type="submit" value="Submit"
+#     </form>"""
+#
+#
+# @app.post('/checkout')  # оформлюємо замовленя
+# @login_required
+# def add_training():
+#     return 'training was added'
 
 
 @app.get('/fitness_center')
