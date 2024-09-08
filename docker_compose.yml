@@ -2,15 +2,18 @@ services:
   web:
     build: .
     ports:
-      - "127.0.0.1:8080:8080"
+      - 8080:8080 # 8080:5000 from 5000 in 8080
+#      - "127.0.0.1:8080:8080" # 127.0.0.1:8080; or 8080:5000(if in docker 5000)
     command: python3 fitness.py #??????
     environment:
-      DB_HOST: db_postgres
-      RABBITMQ_HOST: rabbitmq
+      DB_HOST: project_database
+      RABBIT_HOST: rabbit
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: example
       RABBITMQ_DEFAULT_USER: rabbit
       RABBITMQ_DEFAULT_PASS: rabbit
+#  redis:
+#    image: "redis:alpine"
 
   celery_worker:
     build: .
@@ -18,8 +21,8 @@ services:
     environment:
       smtp_sender: "<user_smtp_email>"
       smtp_password: "<user_smtp_password>"
-      DB_HOST: db_postgres
-      RABBITMQ_HOST: rabbitmq
+      DB_HOST: project_database
+      RABBIT_HOST: rabbit
       RABBITMQ_DEFAULT_USER: rabbit
       RABBITMQ_DEFAULT_PASS: rabbit
 
@@ -31,13 +34,14 @@ services:
       POSTGRES_PASSWORD: example
     ports:
       - 5432:5432
+    hostname: project_database
 
   rabbit_mq:
     image: "rabbitmq:3-management"
     ports:
       - 15672:15672
       - 5672:5672
-#    hostname: rabbitmq
+    hostname: rabbit
 #    environment:
 #      RABBITMQ_DEFAULT_USER: rabbit
 #      RABBITMQ_DEFAULT_PASS: rabbit

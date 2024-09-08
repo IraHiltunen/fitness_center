@@ -35,6 +35,16 @@ app.secret_key = os.environ.get("SESSION_SECRET_KEY")
 #         return result
 #     return wr1()
 
+# def login_required(func):
+#     @wraps(func)
+#     def wr1(*args, **kwargs):
+#         if session.get('user') is None:
+#             return redirect('/login')
+#         #result = func(*args, **kwargs)
+#         #return result
+#         return func(*args, **kwargs)
+#     return wr1()
+
 def login_required(func):
     @wraps(func)
     def wr1(*args, **kwargs):
@@ -192,7 +202,7 @@ def get_reservation_list():
                     models.Service(name=form_data["name"]),
                     models.Coach(name=form_data["name"]),
                     models.Reservation(id=int(form_data["id"]),date=form_data["date"],time=form_data["time"]))
-    return render_template('get_reservation_list.html', ????=reservations)  # ?????????
+    return render_template('get_reservation_list.html')#, ????=reservations)  # ?????????
 
 
 @app.post('/user/reservations')# додати резервацію начебто зробила
@@ -326,7 +336,7 @@ def get_fitness_center_id_info(fitness_center_id):
     database.init_db()
     columns = (models.FitnessCenter.id, models.FitnessCenter.address,
                models.FitnessCenter.name, models.FitnessCenter.contacts)
-    data = database.db_session.query(*columns).filter_by(id=fitness_center_id.first()
+    data = database.db_session.query(*columns).filter_by(id=fitness_center_id.first())
     return render_template('fitness_center_id_info.html',
                            fitness_center_id=data['fitness_center_id'])
 
@@ -342,7 +352,7 @@ def get_coaches(fitness_center_id):
     data = (database.db_session.query(*columns).join(models.FitnessCenter)).filter(
         models.Coach.fitness_center_id == fitness_center_id).all()
     # що тут = data?????? coaches?????/
-    return render_template('get_coach.html', ???=data, fitness_center_id=fitness_center_id)
+    return render_template('get_coach.html')#, ???=data, fitness_center_id=fitness_center_id)
 
 @app.get('/fitness_center/<fitness_center_id>/coaches/coach/')
 def get_coach(fitness_center_id, coach_id):
