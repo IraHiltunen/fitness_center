@@ -2,18 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>fitness_center_id</title>
+    <title>fitness_center_id_details</title>
 </head>
 <body>
-<form action='/fitness_center/id/' method='post'>
-  <label for="fitness_center_name">fitness_center_name:</label><br>
-  <input type="text" id="fitness_center_name" name="fitness_center_name"><br>
-  <label for="address">address:</label><br>
-  <input type="text" id="address" name="address">
-  <label for="contacts">contacts:</label><br>
-  <input type="text" id="contacts" name="contacts">
+    <h1>Fitness Center Information:</h1>
+    <strong>Name:</strong> {{ fitness_center_id.name }}<br>
+    <p></p>
 
-  <input type="submit" value="Submit">
-</form>
+<!--    <strong>Gym id:</strong> {{ fitness_center_id.id }}<br>-->
+    <strong>Address:</strong> {{ fitness_center_id.address }}<br>
+    <strong>Contacts:</strong> {{ fitness_center_id.contacts }}<br>
+    <p>
+
+  <form action="/fitness_center/{{ fitness_center_id.id }}/coaches" method="get" style="display:inline;">
+      <button type="submit">Coaches</button>
+  </form><br>
+  <p>
+  <form action="/fitness_center/{{ fitness_center_id.id }}/services" method="get" style="display:inline;">
+      <button type="submit">Services</button>
+  </form><br>
+  <p>
+  <form action="/fitness_center" method="get" style="display:inline;">
+      <button type="submit">Back to main page</button>
+  </form><br>
 </body>
 </html>

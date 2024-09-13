@@ -1,19 +1,45 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Title</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--<form action='/fitness_center/<fitness_center_id>/coaches/<coach_id>/score' method='post'>-->
+<!--  <label for="points">points:</label><br>-->
+<!--  <input type="number" id="points" name="points"><br>-->
+<!--  <label for="text">text:</label><br>-->
+<!--  <input type="text" id="text" name="text">-->
+<!--  <textarea class="form-control" id="score" rows="3" required>{{ some vidguk }}</textarea>-->
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Coach Reviews</title>
 </head>
 <body>
-<form action='/score' method='post'>
-  <label for="points">points:</label><br>
-  <input type="number" id="points" name="points"><br>
-  <label for="text">text:</label><br>
-  <input type="text" id="text" name="text">
-  <textarea class="form-control" id="score" rows="3" required>{{ some vidguk }}</textarea>
+    <h1>Coach Reviews</h1>
 
+    {% if reviews %}
+        <ul>
+        {% for review in reviews %}
+            <li>
+                <strong>Coach:</strong> {{ review.coach_id }}<br>
+                <strong>Points:</strong> {{ review.points }}<br>
+                <strong>Review:</strong> {{ review.text }}<br>
+            </li>
+            <hr>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews found for this coach.</p>
+    {% endif %}
 
-  <input type="submit" value="Submit">
-</form>
+    <form action="/fitness_center/{{ fitness_center_id }}/coaches/{{ coach_id }}" method="get" style="display:inline;">
+        <button type="submit">Back to Coach</button>
+    </form>
 </body>
 </html>

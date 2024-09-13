@@ -2,84 +2,197 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Services</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-    {% block content %}
-    <div id="data">
-          <h1>Services</h1>
-          {% if result %}
-          <table>
-              <tr>
-              {% for key in result[0].keys() %}
-              <th> {{ key }} </th>
-              {% endfor %}
-              </tr>
-              {% for curr_result in result %}
-              <tr>
-              {% for key, value in curr_result.items() %}
-              {% if key == 'service.id' %}
-                  <td><a href="/fitness_center/{{ fitness_center_id }}/services/{{ value }}"> {{ value }}</a></td>
-                {% else %}
-                  <td> {{ value }} </td>
-                {% endif %}
-              {% endfor %}
-              </tr>
-              {% endfor %}
-         </table>
-        {% endif %}
-        </div>
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Services for Fitness Center {{ fitness_center_id }}</h1>
+
+    {% if services %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Service ID</th>
+                    <th>Service Name</th>
+                    <th>Duration (minutes)</th>
+                    <th>Price (USD)</th>
+                    <th>Description</th>
+                    <th>Max Attendees</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td>{{ service.id }}</td>
+                    <td>{{ service.name }}</td>
+                    <td>{{ service.duration }}</td>
+                    <td>${{ service.price }}</td>
+                    <td>{{ service.description }}</td>
+                    <td>{{ service.max_attendees }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No services available for this fitness center.</p>
+    {% endif %}
+
     <br/><br/>
     <div>
         <a href="/fitness_center/{{ fitness_center_id }}">
-        <button class="button button-block">Back to Fitness Center</button>
+            <button class="button button-block">Back to Fitness Center</button>
         </a>
     </div>
-    {% endblock %}
-
-
-<!--    <div class="container">-->
-<!--    <h2 class="text-center mb-4">Послуги фітнес-центра</h2>-->
-<!--    <div class="table-responsive">-->
-<!--        <table class="table table-striped">-->
-<!--            <thead>-->
-<!--            <tr>-->
-<!--                <th>ID</th>-->
-<!--                <th>name</th>-->
-<!--                <th>duration</th>-->
-<!--                <th>price</th>-->
-<!--                <th>description</th>-->
-<!--                <th>max_att</th>-->
-<!--                <th>fitness_center_id</th>-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--            {% for service in services %}-->
-<!--            <tr>-->
-<!--                <td>{{ service.id }}</td>-->
-<!--                <td>{{ service.name }}</td>-->
-<!--                <td>{{ service.duration }}</td>-->
-<!--                <td>{{ service.price }}</td>-->
-<!--                <td>{{ service.description }}</td>-->
-<!--                <td>{{ service.max_attendees }}</td>-->
-<!--                <td>{{ service.fitness_center_id.name }}</td>-->
-<!--                <td>-->
-<!--                    <select name="coach" class="custom-select" id="coach-select-{{ service.id }}">-->
-<!--                        {% for coach in service.coach %}-->
-<!--                        <option value="{{ coach.id }}">{{ coach.name }}</option>-->
-<!--                        {% endfor %}-->
-<!--                    </select>-->
-<!--                </td>-->
-<!--                <td>-->
-<!--                    <button class="btn btn-primary btn-reservation" onclick="reservation({{ fitness_center_id }}, {{ service.id }})">reservation</button>-->
-<!--                </td>-->
-<!--            </tr>-->
-<!--            {% endfor %}-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--    </div>-->
-<!--</div>-->
-</head>
-<body>
-
 </body>
 </html>
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Services</title>-->
+<!--    <style>-->
+<!--        table {-->
+<!--            width: 100%;-->
+<!--            border-collapse: collapse;-->
+<!--        }-->
+
+<!--        table, th, td {-->
+<!--            border: 1px solid black;-->
+<!--        }-->
+
+<!--        th, td {-->
+<!--            padding: 8px;-->
+<!--            text-align: left;-->
+<!--        }-->
+
+<!--        th {-->
+<!--            background-color: #f2f2f2;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!-- {% block content %}-->
+<!--<div id="data">-->
+<!--          <h1>Services</h1>-->
+<!--          {% if result %}-->
+<!--          <table>-->
+<!--              <tr>-->
+<!--              {% for key in result[0].keys() %}-->
+<!--              <th> {{ key }} </th>-->
+<!--              {% endfor %}-->
+<!--              </tr>-->
+<!--              {% for curr_result in result %}-->
+<!--              <tr>-->
+<!--              {% for key, value in curr_result.items() %}-->
+<!--              {% if key == 'service.id' %}-->
+<!--                  <td><a href="/fitness_center/{{ fitness_center_id }}/services/{{ value }}"> {{ value }}</a></td>-->
+<!--                {% else %}-->
+<!--                  <td> {{ value }} </td>-->
+<!--                {% endif %}-->
+<!--              {% endfor %}-->
+<!--              </tr>-->
+<!--              {% endfor %}-->
+<!--         </table>-->
+<!--        {% endif %}-->
+<!--        </div>-->
+<!--<br/><br/>-->
+
+<!--{% endblock %}-->
+
+<!--    <br/><br/>-->
+<!--    <div>-->
+<!--        <a href="/fitness_center/{{ fitness_center_id }}">-->
+<!--            <button class="button button-block">Back to Fitness Center</button>-->
+<!--        </a>-->
+<!--    </div>-->
+<!--</body>-->
+<!--</html>-->
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Services</title>-->
+<!--    <style>-->
+<!--        table {-->
+<!--            width: 100%;-->
+<!--            border-collapse: collapse;-->
+<!--        }-->
+
+<!--        table, th, td {-->
+<!--            border: 1px solid black;-->
+<!--        }-->
+
+<!--        th, td {-->
+<!--            padding: 8px;-->
+<!--            text-align: left;-->
+<!--        }-->
+
+<!--        th {-->
+<!--            background-color: #f2f2f2;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>Services</h1>-->
+
+<!--    {% if services %}-->
+<!--        <table>-->
+<!--            <thead>-->
+<!--                <tr>-->
+<!--                    <th>Service ID</th>-->
+<!--                    <th>Service Name</th>-->
+<!--                    <th>Duration</th>-->
+<!--                    <th>Price</th>-->
+<!--                    <th>Description</th>-->
+<!--                    <th>Max Attendees</th>-->
+<!--                    <th>Fitness Center Name</th>-->
+<!--                </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--                {% for service in services %}-->
+<!--                <tr>-->
+<!--                    <td>{{ service.id }}</td>-->
+<!--                    <td>{{ service.name }}</td>-->
+<!--                    <td>{{ service.duration }} minutes</td>-->
+<!--                    <td>${{ service.price }}</td>-->
+<!--                    <td>{{ service.description }}</td>-->
+<!--                    <td>{{ service.max_attendees }}</td>-->
+<!--                    <td>{{ service.fitness_center_id.name }}</td>-->
+<!--                </tr>-->
+<!--                {% endfor %}-->
+<!--            </tbody>-->
+<!--        </table>-->
+<!--    {% else %}-->
+<!--        <p>No services available for this fitness center.</p>-->
+<!--    {% endif %}-->
+
+<!--    <br/><br/>-->
+<!--    <div>-->
+<!--        <a href="/fitness_center/{{ fitness_center_id }}">-->
+<!--            <button class="button button-block">Back to Fitness Center</button>-->
+<!--        </a>-->
+<!--    </div>-->
+<!--</body>-->
+<!--</html>-->

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Review</title>
+</head>
+<body>
+    <h1>Make a Review for Coach</h1>
+
+    <form action="/fitness_center/{{ fitness_center_id }}/coaches/{{ coach_id }}/fill_score" method="post">
+        <label for="points">Points :</label>
+        <input type="number" id="points" name="points"  required><br>
+
+        <label for="text">Review Text:</label>
+        <textarea id="text" name="text" required></textarea><br>
+
+        <button type="submit">Submit Review</button>
+    </form>
+
+    <form action="/fitness_center/{{ fitness_center_id }}/coaches/{{ coach_id }}" method="get" style="display:inline;">
+        <button type="submit">Back to Coach</button>
+    </form>
+</body>
+</html>

@@ -1,48 +1,36 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>fitness_center</title>
+    <title>Fitness Centers</title>
 </head>
 <body>
-<form action='/fitness_center' method='post'>
-  <label for="gim_name">gim_name:</label><br>
-  <input type="text" id="gim_name" name="gim_name"><br>
-  <label for="address">address:</label><br>
-  <input type="text" id="address" name="address">
-  <label for="contacts">contacts:</label><br>
-  <input type="text" id="contacts" name="contacts">
+    <h1>Fitness Centers</h1>
+    <ul>
+        {% for fitness_center_id in fitness_center %}
+        <li>
+            <strong>Gym id:</strong> {{ fitness_center_id.id }}<br>
+            <strong>Gym Name:</strong> {{ fitness_center_id.name }}<br>
+            <strong>Address:</strong> {{ fitness_center_id.address }}<br>
+            <strong>Contacts:</strong> {{ fitness_center_id.contacts }}<br>
+            <form action="/fitness_center/{{ fitness_center_id.id }}" method="get" style="display:inline;">
+                <button type="submit">View Details</button>
+            </form>
+        </li>
+        <hr>
+        {% endfor %}
+    </ul>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="/">My Fitness Center</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">main_page</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/user/reservations">reservations</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/user">owner_page</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/fitness_center">fitness_center</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link btn btn-primary btn-logout" href="/logout">Вийти</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+    <a href="/login" >
+        <button type="button">Go to Login</button>
+    </a>
+    <p></p>
+    <a href="/registration" >
+        <button type="button">Go to Registration</button>
+    </a>
 
-  <input type="submit" value="Submit">
-</form>
 </body>
 </html>
 

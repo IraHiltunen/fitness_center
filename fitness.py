@@ -16,14 +16,19 @@ from send_mail import add, send_mail
 
 #import sqlite3
 from flask_session import Session
-
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
+#
+# app = Flask(__name__, template_folder='templates')
+# # app.secret_key = "123456789"
+# app.secret_key = os.environ.get("SESSION_SECRET_KEY")
 
-app = Flask(__name__, template_folder='templates')
-# app.secret_key = "123456789"
-app.secret_key = os.environ.get("SESSION_SECRET_KEY")
+app = Flask(__name__)
+# Check Configuration section for more details
+SESSION_TYPE = 'FileSystem'
+app.config.from_object(__name__)
+Session(app)
 
 
 # def login_required(func):
@@ -33,17 +38,8 @@ app.secret_key = os.environ.get("SESSION_SECRET_KEY")
 #             return redirect('/login')
 #         result = func(*args, **kwargs)
 #         return result
-#     return wr1()
+#     return wr1
 
-# def login_required(func):
-#     @wraps(func)
-#     def wr1(*args, **kwargs):
-#         if session.get('user') is None:
-#             return redirect('/login')
-#         #result = func(*args, **kwargs)
-#         #return result
-#         return func(*args, **kwargs)
-#     return wr1()
 
 def login_required(func):
     @wraps(func)
@@ -52,7 +48,7 @@ def login_required(func):
             return func(*args, **kwargs)
         else:
             redirect('/login')
-    return wr1()
+    return wr1
 ############################
 
 
@@ -60,9 +56,9 @@ def login_required(func):
 def index():
     # from send_mail import add
     # add.delay(1, 2)
-    send_mail.delay("irajhdhj@gmail.com", "ira", "some text")
+    #send_mail.delay("irajhdhj@gmail.com", "ira", "some text")
     #return render_template('index.html')
-    return redirect('/fitness_center_info')
+    return redirect('/fitness_center')
 
 
 @app.get('/registration')  # відображає форму
@@ -94,12 +90,12 @@ def post_register():
     form_data = request.form
     database.init_db()
     user1 = models.User(login=form_data["login"], password=form_data['password'],
-                        birth_date=datetime.datetime.strptime(form_data["birth_date"], "%y-%m-%d"),
-                        phone=form_data['phone'])
+                        birth_date=datetime.datetime.strptime(form_data["birth_date"], "%Y-%m-%d"),
+                        phone=form_data['phone'], funds=form_data['funds'], email=form_data['email'])
     database.db_session.add(user1)
     database.db_session.commit()
 
-    return "user registered"
+    return redirect('/fitness_center')
 
 
 @app.get('/login') # відображає форму
@@ -336,34 +332,42 @@ def get_fitness_center_id_info(fitness_center_id):
     database.init_db()
     columns = (models.FitnessCenter.id, models.FitnessCenter.address,
                models.FitnessCenter.name, models.FitnessCenter.contacts)
-    data = database.db_session.query(*columns).filter_by(id=fitness_center_id.first())
+    data = database.db_session.query(*columns).filter_by(id=fitness_center_id).first()
     return render_template('fitness_center_id_info.html',
-                           fitness_center_id=data['fitness_center_id'])
+                            fitness_center_id=data)
 
 
-@app.get('/fitness_center/<fitness_center_id>/coaches/')
+@app.get('/fitness_center/<fitness_center_id>/coaches')# списоk тренерів цього клубу
 def get_coaches(fitness_center_id):
     database.init_db()
-    columns = (models.Coach.id.label('coach.id'),
-               models.FitnessCenter.name.label('fitness_center.name'),
-               models.Coach.name.label('coach.name'),
-               models.Coach.age.label('coach.age'),
-               models.Coach.sex.label('coach.sex'))
+    columns = (models.Coach.id,
+               models.FitnessCenter.name,
+               models.Coach.name,
+               models.Coach.age,
+               models.Coach.sex)
     data = (database.db_session.query(*columns).join(models.FitnessCenter)).filter(
         models.Coach.fitness_center_id == fitness_center_id).all()
-    # що тут = data?????? coaches?????/
-    return render_template('get_coach.html')#, ???=data, fitness_center_id=fitness_center_id)
+    return render_template('get_coaches.html',
+                           coaches=data, fitness_center_id=fitness_center_id)
 
-@app.get('/fitness_center/<fitness_center_id>/coaches/coach/')
+@app.get('/fitness_center/<fitness_center_id>/coaches/<coach_id>')
 def get_coach(fitness_center_id, coach_id):
     database.init_db()
-    columns = (models.FitnessCenter.name.label('fitness_center.name'),
-               models.Coach.name.label('coach.name'),
-               models.Coach.age.label('coach.age'),
-               models.Coach.sex.label('coach.sex'))
-    data = (database.db_session.query(*columns).join(models.FitnessCenter)).filter(
-        models.Coach.fitness_center_id == fitness_center_id, models.Coach.id).first()
-    return render_template('get_coach.html') # coach=data ??????????
+
+    coach = (database.db_session.query(
+        models.Coach.id,
+        models.Coach.name,
+        models.Coach.age,
+        models.Coach.sex,
+        models.Coach.fitness_center_id,
+        models.FitnessCenter.name.label('fitness_center_name')
+    )
+    .join(models.FitnessCenter)
+    .filter(models.Coach.fitness_center_id == fitness_center_id,
+            models.Coach.id == coach_id)
+    .first())
+    return render_template('get_coach.html', coach=coach)
+
 
     # service selection for reservation треба доробити таблицю для цього сервісу
     # columns = (models.CoachCapacity.service.label('service.id'),
@@ -390,34 +394,53 @@ def get_coach(fitness_center_id, coach_id):
 
 @app.get('/fitness_center/<fitness_center_id>/coaches/<coach_id>/score')  # всі відгуки показати
 @login_required
-def get_coach_score(coach_id):
-    user = session.get('user', None)
-    database.init_db() # не знаю що тут робити
-    columns = (models.Review.points.label('review.points'),
-               models.Coach.name.label('coach.name'),
-               models.Review.text.label('review.text'),
-               models.User.login.label('user.login'),
-               models.User.id.label('user.id'))
-    data = (database.db_session.query(*columns)
-                 .join(models.User, models.User.id == models.Review.user_id, isouter=True)
-                 .join(models.Coach, models.Coach.id == models.Coach.id, isouter=True)
-                 .filter(models.Coach.fitness_center_id == fitness_center_id,
-                         models.Coach.id == coach_id)).all()
+def get_coach_score(fitness_center_id, coach_id):
+    #user = session.get('user', None)
+    database.init_db()
+    # reviews = (database.db_session.query(models.Review.id, models.Review.text,
+    #                                   models.Review.points, models.User.login,
+    #                                   models.Coach.name.label('coach_name'))
+    #                                   .join(models.User, models.User.id == models.Review.user_id, isouter=True)
+    #                                   .join(models.Coach, models.Coach.id == models.Review.coach_id)
+    #                                   .filter(models.Coach.fitness_center_id == fitness_center_id,
+    #                                           models.Coach.id == coach_id)
+    #                                   .all())
+    reviews = (database.db_session.query(models.Review.points, models.Review.text, models.Coach.id)
+               #.join(models.User, models.User.id == models.Review.user_id)
+               .filter(models.Review.coach_id == coach_id)
+               .all())
+    if not reviews:
+        return render_template('get_coach_score.html',
+                               fitness_center_id=fitness_center_id, coach_id=coach_id,
+                               message="No reviews found for this coach")
+    return render_template('get_coach_score.html', coach_id=coach_id,
+                           fitness_center_id=fitness_center_id,
+                           reviews= reviews)#reviews=score)
+                           #score=data, points=points, text=text)
 
-    return render_template('get_coach_score.html',
-                           score=data,
-                           points=points, text=text)
+    # data = (database.db_session.query(*columns)
+    #              .join(models.User, models.User.id == models.Review.user_id, isouter=True)
+    #              .join(models.Coach, models.Coach.id == models.Coach.id, isouter=True)
+    #              .filter(models.Coach.fitness_center_id == fitness_center_id,
+    #                      models.Coach.id == coach_id)).all()
 
 
-@app.post('/fitness_center/<fitness_center_id>/coaches/<coach_id>/score') # написати(створити) відгук про тренера
+@app.get('/fitness_center/<fitness_center_id>/coaches/<coach_id>/form_score') # написати(створити) відгук про тренера
 @login_required
-def set_coach_score(coach_id):
+def form_for_score(fitness_center_id, coach_id):
+    return render_template('form_for_score.html', fitness_center_id=fitness_center_id,
+                           coach_id=coach_id)
+
+
+@app.post('/fitness_center/<fitness_center_id>/coaches/<coach_id>/fill_score') # написати(створити) відгук про тренера
+@login_required
+def set_coach_score(fitness_center_id, coach_id):
     form_data = request.form
     user = session.get('user', None)
-    points = request.form.get('points')
-    text = request.form.get('text')
+    points = form_data.get('points')
+    text = form_data.get('text')
 
-    user_review = database.db_session.query(Review(user_id=user['id'],
+    user_review = database.db_session.query(models.Review(user_id=user['id'],
                                                    coach_id=coach_id,
                                                    fitness_center_id=fitness_center_id,
                                                    points=int(points),
@@ -425,44 +448,48 @@ def set_coach_score(coach_id):
     database.db_session.add(user_review)
     database.db_session.commit()
 
-    return redirect('/score')
+    return redirect('/fitness_center/<fitness_center_id>/coaches/<coach_id>')
 
 
-@app.get('/fitness_center/<fitness_center_id>/services/')# чи тут щось треба?
+@app.get('/fitness_center/<fitness_center_id>/services')
 def get_services(fitness_center_id):
-    database.init_db()
-    # services = database.db_session.query(models.Service).filter_by(
-    #     models.Service.fitness_center_id == fitness_center_id).all()
+    services = database.db_session.query(
+        models.Service.id,
+        models.Service.name,
+        models.Service.duration,
+        models.Service.price,
+        models.Service.description,
+        models.Service.max_attendees,
+        models.Service.fitness_center_id
+    ).filter(
+        models.Service.fitness_center_id == fitness_center_id
+    ).all()
 
-    columns = (models.Service.id.label('service.id'),
-               models.Service.name.label('service.name'),
-               models.Service.description, models.Service.duration, models.Service.price,
-               models.FitnessCenter.name.label('fitness_center_id.name'))
-    data = ((database.db_session.query(*columns).join(models.FitnessCenter)).
-            filter(models.Service.fitness_center_id == fitness_center_id).all())
-
-    return render_template('services.html',
+    return render_template('services.html', services=services,
                            fitness_center_id=fitness_center_id)
 
-    # with SQLiteDatabase('db.db') as db:
-    #     res = db.fetch_all("service", {"fitness_center_id": fitness_center_id},
-    #                       join={'fitness_center': 'service.fitness_center_id = fitness_center.id'},
-    #                       columns=['service.id as service_id', 'service.name', 'service.time',
-    #                                'service.description','service.max_attendees',
-    #                                'service.duration', 'fitness_center.name as fitness_center_name'])
-
-@app.get('/fitness_center/<fitness_center_id>/services/<service_id>')
-def get_service_info(fitness_center_id, service_id):
-    database.init_db()
-    columns = (models.Service.name.label('service.name'),
-               models.Service.description, models.Service.duration,
-               models.Service.price,models.FitnessCenter.name.label('fitness_center_id.name'))
-    data = (database.db_session.query(*columns).join(models.FitnessCenter)).filter(
-        models.Service.fitness_center_id == fitness_center_id,
-        models.Service.id == service_id).first()
-
-    return render_template('get_service_info.html', service_name=data)
-
+# не треба,бо вся інф є в сервісес
+# @app.get('/fitness_center/<fitness_center_id>/services/<service_id>')
+# def get_service_info(fitness_center_id, service_id):
+#     database.init_db()
+#
+#     service = database.db_session.query(
+#         models.Service.id,
+#         models.Service.name,
+#         models.Service.duration,
+#         models.Service.price,
+#         models.Service.description,
+#         models.Service.max_attendees,
+#         models.FitnessCenter.name.label('fitness_center_name')
+#     ).join(models.FitnessCenter).filter(
+#         models.Service.id == service_id,
+#         models.Service.fitness_center_id == fitness_center_id
+#     ).first()
+#
+#     if not service:
+#         return render_template('services.html', message="Service not found.")
+#
+#     return render_template('get_service_info.html', service=service)
 
     # with SQLiteDatabase('db.db') as db:
     #     res = db.fetch_one('service', {'fitness_center_id': fitness_center_id, 'service_id': service_id},
@@ -470,15 +497,6 @@ def get_service_info(fitness_center_id, service_id):
     #                        columns=['service.id as service_id', 'service.name', 'service.duration'
     #                                 'service.description','service.max_attendees',
     #                                 'fitness_center.name as fitness_center_name'])
-
-
-
-
-# @app.get('/fitness_center/<gim_id>/loyalty_programs')  # отримати інф
-# def get_loyalty_prog_info(gim_id): # тут просто текст буде
-#     res = get_from_db(f'select loyalty_programs from ????? where id=1{gim_id}', )
-#     return res
-
 
 if __name__ == '__main__':
     host = '0.0.0.0'

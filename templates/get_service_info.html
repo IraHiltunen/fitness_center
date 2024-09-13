@@ -2,23 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Service Info</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-<form action='/get_service_info' method='post'> # why post?!!!!
-  <label for="service_name">service_name:</label><br>
-  <input type="text" id="service_name" name="service_name"><br>
-  <label for="duration">duration:</label><br>
-  <input type="number" id="duration" name="duration">
-  <label for="description">description:</label><br>
-  <input type="text" id="description" name="description">
-  <label for="price">price:</label><br>
-  <input type="number" id="price" name="price">
-  <label for="max_attendees">max_attendees:</label><br>
-  <input type="text" id="max_attendees" name="max_attendees">
+    <h1>Service Information</h1>
 
+    {% if service %}
+        <table>
+            <tr>
+                <th>Service ID</th>
+                <td>{{ service.id }}</td>
+            </tr>
+            <tr>
+                <th>Service Name</th>
+                <td>{{ service.name }}</td>
+            </tr>
+            <tr>
+                <th>Duration</th>
+                <td>{{ service.duration }} minutes</td>
+            </tr>
+            <tr>
+                <th>Price</th>
+                <td>${{ service.price }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ service.description }}</td>
+            </tr>
+            <tr>
+                <th>Max Attendees</th>
+                <td>{{ service.max_attendees }}</td>
+            </tr>
+            <tr>
+                <th>Fitness Center</th>
+                <td>{{ service.fitness_center_name }}</td>
+            </tr>
+        </table>
+    {% else %}
+        <p>Service not found.</p>
+    {% endif %}
 
-  <input type="submit" value="Submit">
-</form>
+    <br/><br/>
+    <div>
+          <form action="/fitness_center" method="get" style="display:inline;">
+      <button type="submit">Back to main page</button>
+  </form><br>
+    </div>
 </body>
 </html>

@@ -20,13 +20,13 @@ class User(Base):
     funds = Column(Integer, default=0, nullable=False)
     email = Column(String(100), nullable=False)
 
-    def __init__(self, login, password, birth_date, phone):  #, funds):
+    def __init__(self, login, password, birth_date, phone, funds, email):
         self.login = login
         self.password = password
         self.birth_date = birth_date
         self.phone = phone
-        self.funds = 0
-
+        self.funds = funds
+        self.email = email
     # def __repr__(self): # приклад мабудь
     #     return f'<User {self.login!r}>'
 

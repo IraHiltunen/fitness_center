@@ -2,20 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Coach Info</title>
 </head>
 <body>
-<form action='/get_coach' method='post'>
-  <label for="fitness_center_id">fitness_center_id:</label><br>
-  <input type="text" id="fitness_center_id" name="fitness_center_id"><br>
-  <label for="name">name:</label><br>
-  <input type="text" id="name" name="name"><br>
-  <label for="age">age:</label><br>
-  <input type="number" id="age" name="age">
-  <label for="sex">sex:</label><br>
-  <input type="text" id="sex" name="sex">
+    <h1>Coach Information</h1>
 
-  <input type="submit" value="Submit">
-</form>
+    <p><strong>Coach Name:</strong> {{ coach.name }}</p>
+    <p><strong>Age:</strong> {{ coach.age }}</p>
+    <p><strong>Sex:</strong> {{ coach.sex }}</p>
+    <p><strong>Fitness Center:</strong> {{ coach.fitness_center_id }}</p>
+
+<!--    <form action="/fitness_center/<fitness_center_id>/coaches/<coach_id>/score" method="get" style="display:inline;">-->
+<!--        <button type="submit">look at coach points</button>-->
+<!--    </form><br>-->
+
+<!--     <a href="/fitness_center/{{ fitness_center_id }}/coaches/{{ coach_id }}/score">Look at coach points</a><br><br>-->
+<!--як тут потрібний фітнес центр та коуч вставити?-->
+    <a href="/fitness_center/{{ coach.fitness_center_id }}/coaches/{{ coach.id }}/score">Look at coach points</a><br><br>
+
+    <p></p>
+    <form action="/fitness_center/<fitness_center_id>/coaches/<coach_id>/form_score" method="get" style="display:inline;">
+        <button type="submit">add points to coach</button>
+    </form><br>
+    <p></p>
+    <form action="/fitness_center" method="get" style="display:inline;">
+        <button type="submit">Back to main page</button>
+    </form><br>
 </body>
 </html>

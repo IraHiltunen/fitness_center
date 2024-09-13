@@ -1,0 +1,36 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Coaches</title>
+</head>
+<body>
+    <h1>Coaches</h1>
+    <ul>
+        {% for coach in coaches %}
+        <li>
+            <strong>Coach ID:</strong> {{ coach.id }}<br>
+            <strong>Coach Name:</strong> {{ coach.name }}<br>
+            <strong>Age:</strong> {{ coach.age }}<br>
+            <strong>Sex:</strong> {{ coach.sex }}<br>
+            <strong>Fitness Center:</strong> {{ coach.fitness_center_id }}<br>
+            <a href="/fitness_center/{{ fitness_center_id }}/coaches/{{ coach.id }}">
+                <button type="button">View Coach Details</button>
+            </a>
+
+        </li>
+        <hr>
+        {% endfor %}
+    </ul>
+  <p>
+  <form action="/fitness_center" method="get" style="display:inline;">
+      <button type="submit">Back to main page</button>
+  </form><br>
+    <p></p>
+<a href="/fitness_center/{{ fitness_center_id }}">
+    <button class="button button-block">Back to Fitness Center</button>
+</a>
+</body>
+</html>
