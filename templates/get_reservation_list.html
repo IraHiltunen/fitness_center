@@ -2,22 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>User Reservations</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-<form action='/user/reservations' method='post'>
-  <label for="user_id">user_id:</label><br>
-  <input type="number" id="user_id" name="user_id"><br>
-  <label for="coach_id">coach_id:</label><br>
-  <input type="number" id="coach_id" name="coach_id">
-  <label for="service_id">service_id:</label><br>
-  <input type="number" id="service_id" name="service_id">
-  <label for="date">date:</label><br>
-  <input type="date" id="date" name="date">
-    <label for="time">time:</label><br>
-  <input type="time" id="time" name="time">
+    <h1>Your Reservations</h1>
 
-  <input type="submit" value="Submit">
-</form>
+    {% if reservations %}
+    <table>
+        <thead>
+            <tr>
+                <th>Reservation ID</th>
+                <th>Service Name</th>
+                <th>Coach Name</th>
+                <th>Date</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr>
+                <td>{{ reservation.id }}</td>
+                <td>{{ reservation.service_name }}</td>
+                <td>{{ reservation.coach_name }}</td>
+                <td>{{ reservation.date }}</td>
+                <td>{{ reservation.time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No reservations found.</p>
+    {% endif %}
+
+    <br/><br/>
+    <form action="/user/<user_id>" method="get">
+        <button type="submit">Back to user_id</button>
+    </form>
 </body>
 </html>

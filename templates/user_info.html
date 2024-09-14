@@ -10,13 +10,11 @@ username: {{ user_info.login }}
 phone: {{ user_info.phone }}
 <p>
 birth_date: {{ user_info.birth_date }}
-<p>
-funds: {{ user_info.funds }}
+<p></p>
+<form action="/user/reservations" method="get" style="display:inline;">
+        <button type="submit">View Reservations</button>
+</form><br>
 
-<form action="/user/{{ user.id }}" method="post">
-    <input name="phone" id="phone" type="text">
-    <input type="submit">
-</form>
   <p>
   <form action="/fitness_center" method="get" style="display:inline;">
       <button type="submit">Back to main page</button>

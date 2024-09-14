@@ -69,7 +69,7 @@ def user_register_invitation():
 def check_credentials(username, password): # перевіряє залогінився чи ні
     database.init_db()
     user = database.db_session.query(models.User).filter_by(
-        login=username, password=password).first()# all()
+        login=username, password=password).first()
 
     # smth = database.db_session.execute(select(models.User).where(models.User.login==username, models.User.password=="ygjgh")).first()[0]
 
@@ -101,8 +101,8 @@ def post_register():
 @app.get('/login') # відображає форму
 def user_login_form():
     user = session.get("user")
-    if user:
-        return redirect('/user')# redirect будує якийсь обʼєкт з відповіддю(як return)
+    # if user:
+    #     return redirect('/user')# redirect будує якийсь обʼєкт з відповіддю(як return)
     return render_template('user_login.html')
 
 
@@ -114,7 +114,7 @@ def user_login():
     if user is not None:
         session['user'] = {'id': user.id, 'login': user.login}
         return redirect('/user')
-    else:
+    else: # якщо не вдалася авторизація
         user_id = session.get('user', None)
         if user_id:
             return redirect('/user')
@@ -131,23 +131,15 @@ def logout():
 @app.get('/user/<user_id>')
 @login_required
 def get_user_info(user_id):
-    user = session.get("user_id")
-    #user = session.get(user_id) #чому так не можу?
+    #user = session.get("user_id")
     database.init_db()
-    #?????????????
-    data = database.db_session.query(models.User.login, models.User.birth_date,
+    user_data = database.db_session.query(models.User.login, models.User.birth_date,
                                      models.User.phone).filter_by(
-        id=session.get('user_id')).first()
-
-    columns = (models.User.login, models.User.birth_date,
-               models.User.phone)#, models.User.email)
-    data2 = database.db_session.query(*columns).filter_by(
-        id=session.get('user_id')).first()
-    return render_template('user_info.html', user_info=data)# user=data?????????
-
-    # with SQLiteDatabase('db.db') as db:
-    #     res = db.fetch_one("user", {'id': user_id})
-    # return render_template('user_info.html', user_info=res) #? user=res ????????????
+        id=user_id).first()
+        #id=session.get('user_id')).first()
+    if not user_data:
+        return "User not found", 404
+    return render_template('user_info.html', user_info=user_data)
 
 
 @app.post('/user/<user_id>')# алхімія, але не впевнена,що вірно все
@@ -161,10 +153,6 @@ def add_user_info(user_id):  # де використати user_id,можлив�
     database.db_session.add(new_data_user)
     database.db_session.commit()
     return render_template('user_info.html', user_info=new_data_user) # user=new_data_user?????????
-
-    # with SQLiteDatabase('db.db') as db:
-    #     res = db.fetch_one("user", {'id': user_id})
-    # return render_template('user_info.html', user=res)
 
 
 # @app.get('/funds')# вирішили не треба
@@ -191,20 +179,33 @@ def add_user_info(user_id):  # де використати user_id,можлив�
 @app.get('/user/reservations')# список резервацій юзера
 @login_required
 def get_reservation_list():
-    user = session.get('user', None)
-    form_data = request.form # тільки якщо в темплейті є та форма!!
+    #user = session.get('user', None)
+
+    user = session.get('user')
+    if not user:
+        return redirect('/login')
+    #form_data = request.form # тільки якщо в темплейті є та форма!!
     database.init_db()
-    reservations = database.db_session.query(models.User(login=form_data["login"]),
-                    models.Service(name=form_data["name"]),
-                    models.Coach(name=form_data["name"]),
-                    models.Reservation(id=int(form_data["id"]),date=form_data["date"],time=form_data["time"]))
-    return render_template('get_reservation_list.html')#, ????=reservations)  # ?????????
+    reservations = (database.db_session.query(models.Reservation.id,
+                                              models.Reservation.date,
+                                              models.Reservation.time,
+                                              models.Service.name.label('service_name'),
+                                              models.Coach.name.label('coach_name'))
+                    .join(models.Service, models.Reservation.service_id == models.Service.id)
+                    .join(models.Coach, models.Reservation.coach_id == models.Coach.id)
+                    .filter(models.Reservation.user_id == user['id'])
+                    .all())
+
+    return render_template('get_reservation_list.html', reservations=reservations)
 
 
 @app.post('/user/reservations')# додати резервацію начебто зробила
 @login_required
 def add_reservation():
     user_id = session.get('user_id', None)
+    if not user_id:
+        return redirect('/login')
+
     form_dict = request.form
     service_id = form_dict['service_id']
     coach_id = form_dict['coach_id']
@@ -215,6 +216,13 @@ def add_reservation():
                                          coach_id=form_dict["coach_id"],
                                          service_id=form_dict["service_id"],
                                          date=["date"], time=["time"])
+
+    # new_reservation = models.Reservation(user_id=user_id,
+    #                                      coach_id=coach_id,
+    #                                      service_id=service_id,
+    #                                      date=date,
+    #                                      time=time)
+
     database.db_session.add(new_reservation)
     database.db_session.commit()
 
@@ -222,38 +230,14 @@ def add_reservation():
     return redirect('/user/reservations')
 
 
-@app.post('/user/reservations/<reservation_id>')# редагувати резервацію
-@login_required
-def rebuild_reservation(reservation_id):
-    pass
-
-
 @app.post('/user/reservations/<reservation_id>/delete')# видалити резервацію
 @login_required
 def delete_reservation(reservation_id):
-    # user_id = session.get('user_id', None) не знаю чи треба це
-    # from_dict = request.form
-    # service_id = from_dict['service_id']
-    # coach_id = from_dict['coach_id']
-    # slot_id = from_dict['slot_id']
-    # result = clac_slots(1,2,4)
     database.init_db()
     database.db_session.query(models.Reservation).filter_by(id=reservation_id,
                                                             user=session.get('user_id')).delete()
     database.db_session.commit()
     return redirect('/user/reservations')
-
-    # with SQLiteDatabase('db.db') as db:
-    #     db.delete_data("reservation", {'reservation' : reservation_id,
-    #                                                 'user_id': user_id['id'],
-    #                                                 'service_id': service_id['id'],
-    #                                                 'coach_id' : coach_id['id'],
-    #                                                 'date': request.form.get('date'),
-    #                                                 'time': request.form.get('time')})
-    #
-    # # send_mail('ira.jhdhj@gmail.com', 'test_subject', )
-    #
-    # return redirect('/user/reservations')
 
 
 @app.get('/user/reservations/<reservation_id>')# отримати інф про конкретну резервацію
@@ -298,23 +282,6 @@ def pre_reservation():
                                       'service': service,
                                       'desired_date': desired_date,
                                       'time_slots': time_slots})
-
-
-# @app.get('/checkout')# можливо не треба це робити, бо не хочу
-# @login_required
-# def get_checkout_box():# звідки взяти інф?
-#     return f"""<form action='/checkout' method='post'>
-#       <label for="checkout_box">checkout_box:</label><br>
-#       <input type="text" id="checkout_box" name="checkout_box"><br>
-#
-#       <input type="submit" value="Submit"
-#     </form>"""
-#
-#
-# @app.post('/checkout')  # оформлюємо замовленя
-# @login_required
-# def add_training():
-#     return 'training was added'
 
 
 @app.get('/fitness_center')
